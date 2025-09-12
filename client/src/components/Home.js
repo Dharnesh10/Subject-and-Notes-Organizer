@@ -294,7 +294,7 @@ const Home = () => {
                   }}
                 >
                   <Typography variant="h6" gutterBottom noWrap={false}>
-                    <TruncatedText text={item.subjectName || "No Name"} limit={30} />
+                    <TruncatedText text={item.subjectName || "No Name"} limit={20} />
                   </Typography>
                   <Box display="flex" mb={1} color="text.secondary">
                     <CalendarTodayIcon fontSize="small" sx={{ mr: 0.5 }} />
@@ -307,9 +307,8 @@ const Home = () => {
                   </Box>
 
                   <Box display="flex" color="text.secondary">
-                    <DescriptionIcon fontSize="small" sx={{ mr: 0.5, mt: "2px" }} />
                     <Typography variant="body2" color="text.secondary">
-                      {item.subjectContent || "No Description"}
+                      <TruncatedText text={"Description: " + (item.subjectContent || "No Description")} limit={45} />
                     </Typography>
                   </Box>
                 </CardContent>

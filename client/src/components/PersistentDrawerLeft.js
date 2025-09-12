@@ -124,12 +124,26 @@ export default function PersistentDrawerLeft({ children }) {
         anchor="left"
         open={open}
       >
-        <DrawerHeader>
+        <DrawerHeader
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2, // horizontal padding
+          }}
+        >
+          {/* Content on the left (username/email) */}
+          <Box>
+            <Typography variant="subtitle1">Welcome, User!</Typography>
+            {/* <Typography variant="body2" color="text.secondary">{email || 'No email available'}</Typography> */}
+          </Box>
+
+          {/* Close icon on the right */}
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
         </DrawerHeader>
-
+        
         <Divider />
 
         <List>
@@ -165,7 +179,6 @@ export default function PersistentDrawerLeft({ children }) {
           </ListItem>
         </List>
       </Drawer>
-
       <MainContent open={open}>
         <DrawerHeader />
         {children}
