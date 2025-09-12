@@ -5,7 +5,6 @@ import Signup from './components/Signup';
 import Layout from './components/Layout';
 import Main from './components/Home';
 import OnlineContent from './components/OnlineContent';
-import CreateSubject from './components/CreateSubject';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
@@ -17,7 +16,6 @@ function App() {
     <Routes>
       <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route path='/' element={<Main />} />
-        <Route path='/create-subject' element={<CreateSubject />} />
         <Route path='/online-content' element={<OnlineContent />} />
       </Route>
       <Route path='/login' element={<Login />} />

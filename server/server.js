@@ -9,12 +9,14 @@ app.use(express.json());
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/auth');
+const subjectRoutes = require('./routes/subjects');
 const {User} = require('./models/user');
 
 const PORT = process.env.PORT || 5000;
 
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/subjects', subjectRoutes);
 // connect to db
 db();
 

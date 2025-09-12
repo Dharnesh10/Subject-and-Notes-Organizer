@@ -19,7 +19,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -118,14 +117,6 @@ export default function PersistentDrawerLeft({ children }) {
         <Divider />
 
         <List>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/create-subject">
-              <ListItemIcon>
-                <AddIcon />
-              </ListItemIcon>
-              <ListItemText primary="Create Subject" />
-            </ListItemButton>
-          </ListItem>
 
           <ListItem disablePadding>
             <ListItemButton component={Link} to="/">
