@@ -1,4 +1,3 @@
-// src/components/PersistentDrawerLeft.js
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { styled, useTheme } from '@mui/material/styles';
@@ -21,6 +20,8 @@ import ListItemText from '@mui/material/ListItemText';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HomeIcon from '@mui/icons-material/Home';
+import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlined';
+import { jwtDecode } from 'jwt-decode';
 
 const drawerWidth = 300;
 
@@ -71,9 +72,26 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 export default function PersistentDrawerLeft({ children }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [email, setEmail] = React.useState('');
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
+
+  // Decode token once when component mounts
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const decoded = jwtDecode(token);
+      const userEmail = decoded.email || decoded.userEmail || '';
+      setEmail(userEmail);
+    } catch (error) {
+      console.error('Failed to decode token:', error);
+      setEmail('');
+      localStorage.removeItem('token');
+    }
+  }, []);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -89,7 +107,8 @@ export default function PersistentDrawerLeft({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ display: 'flex', alignItems: 'center' }}>
+            <ImportContactsOutlinedIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
             Notesmaker
           </Typography>
         </Toolbar>
@@ -99,10 +118,7 @@ export default function PersistentDrawerLeft({ children }) {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
+          '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
         }}
         variant="persistent"
         anchor="left"
@@ -117,7 +133,6 @@ export default function PersistentDrawerLeft({ children }) {
         <Divider />
 
         <List>
-
           <ListItem disablePadding>
             <ListItemButton component={Link} to="/">
               <ListItemIcon>
@@ -141,11 +156,11 @@ export default function PersistentDrawerLeft({ children }) {
 
         <List>
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="/login">
+            <ListItemButton component={Link} to="/login" onClick={() => localStorage.removeItem('token')}>
               <ListItemIcon>
                 <LogoutIcon />
               </ListItemIcon>
-              <ListItemText primary="Logout" />
+              <ListItemText primary="Logout" secondary={email || 'No email available'} />
             </ListItemButton>
           </ListItem>
         </List>

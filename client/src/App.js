@@ -5,6 +5,7 @@ import Signup from './components/Signup';
 import Layout from './components/Layout';
 import Main from './components/Home';
 import OnlineContent from './components/OnlineContent';
+import Unauthorized from './components/Unauthorized';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
@@ -20,6 +21,7 @@ function App() {
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<Signup />} />
+      <Route path='/unauthorized' element={<Unauthorized />} />
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
   );
