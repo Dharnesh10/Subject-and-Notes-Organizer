@@ -22,6 +22,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useParams } from "react-router-dom";
+
 
 // ✅ helper component for truncating subject name with show more/less
 const TruncatedText = ({ text, limit = 25 }) => {
@@ -73,6 +75,7 @@ const Home = () => {
 
   // ✅ auth check and redirect to login if no token
   const navigate = useNavigate();
+  const { id } = useParams();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -101,22 +104,42 @@ const Home = () => {
     }
   }, []);
 
-  // Fetch existing subjects from backend
+ // Fetch all subjects for logged-in user
   const fetchSubjects = async () => {
     try {
-      const res = await API.get("/api/subjects");
+      const res = await API.get("/api/subjects"); // ✅ no id → fetch all for logged-in user
       setItems(res.data);
     } catch (err) {
       console.error("Error fetching subjects:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/unauthorized"); // redirect to unauthorized users
+        navigate("/unauthorized");
+      }
+    }
+  };
+
+  // Fetch a single subject (only if it belongs to logged-in user)
+  const fetchSubjectById = async (id) => {
+    try {
+      const res = await API.get(`/api/subjects/${id}`); // ✅ will 404 if subject not owned by user
+      setItems([res.data]); // wrap in array so UI can still map it
+    } catch (err) {
+      console.error("Error fetching subject:", err.response?.data || err.message);
+      if (err.response?.status === 401) {
+        navigate("/unauthorized");
+      } else if (err.response?.status === 404) {
+        setItems([]); // not found or access denied → clear
       }
     }
   };
 
   React.useEffect(() => {
-    fetchSubjects();
-  }, []);
+    if (id) {
+      fetchSubjectById(id); // fetch one subject
+    } else {
+      fetchSubjects(); // fetch all subjects for this user
+    }
+  }, [id]);
+
 
   // Add a new subject
   const handleAddSubject = async () => {
