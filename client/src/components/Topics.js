@@ -137,12 +137,13 @@ function TopicsPage() {
   const filteredTopics = topics.filter((t) =>
     t.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+console.log(topics)
   return (
     <Container maxWidth="lg" sx={{ mt: 2, mb: 2, px: isMobile ? 1 : 3 }}>
       <Typography
-        variant={isMobile ? "h6" : "h4"}
+        variant={isMobile ? "h6" : "h5"}
         gutterBottom
+        sx={{ fontWeight: "bold", fontFamily: "Arial" }}
         textAlign={isMobile ? "center" : "left"}
       >
         Topics

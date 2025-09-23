@@ -26,9 +26,15 @@ import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlin
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Menu from '@mui/material/Menu';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import MenuItem from '@mui/material/MenuItem';
 import Switch from '@mui/material/Switch';
 import { jwtDecode } from 'jwt-decode';
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import Collapse from "@mui/material/Collapse";
 
 const drawerWidth = 300;
 
@@ -82,6 +88,7 @@ export default function PersistentDrawerLeft({ children }) {
   const [name, setName] = React.useState('User');
   const [email, setEmail] = React.useState('');
   const [darkMode, setDarkMode] = React.useState(false);
+  const [personalOpen, setPersonalOpen] = React.useState(false);
 
   // menu state
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -224,6 +231,7 @@ export default function PersistentDrawerLeft({ children }) {
           }}
         >
           <Box>
+            {/* <img src="/logo.png" width={100} alt="NotesMaker Logo" /> */}
             <Typography variant="subtitle1">Welcome, {name}!</Typography>
             {/* <Typography variant="body2" color="text.secondary">{email || 'No email available'}</Typography> */}
           </Box>
@@ -254,6 +262,39 @@ export default function PersistentDrawerLeft({ children }) {
             </ListItemButton>
           </ListItem>
         </List>
+
+        {/* Personal dropdown */}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => setPersonalOpen(!personalOpen)}>
+            <ListItemIcon>
+              <AccessibilityNewIcon />
+            </ListItemIcon>
+            <ListItemText primary="My Activity" />
+            {personalOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+
+        <Collapse in={personalOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItem disablePadding>
+              <ListItemButton sx={{ pl: 4 }} component={Link} to="/saved">
+                <ListItemIcon>
+                  <BookmarkIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Saved" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton sx={{ pl: 4 }} component={Link} to="/liked">
+                <ListItemIcon>
+                  <ThumbUpIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Liked" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Collapse>
 
         <Divider />
 

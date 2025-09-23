@@ -21,6 +21,8 @@ import {
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
+import { FiEdit } from "react-icons/fi";
+import { FiTrash2 } from "react-icons/fi";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -289,9 +291,10 @@ const Home = () => {
                 <CardActions sx={{ p: 2, justifyContent: "center" }}>
                   <Button
                     onClick={() => navigate(`/subjects/${item._id}/topics`)}
+                    startIcon={<FiEdit color="#e0ddcf" size={15} />}
                     sx={{
                       borderRadius: 2,
-                      px: 4,
+                      px: 3,
                       backgroundColor: "#3d314a",
                       color: "#e0ddcf",
                       textTransform: "none",
@@ -303,9 +306,10 @@ const Home = () => {
 
                   <Button
                     onClick={() => handleOpenDelete(index)}
+                    startIcon={<FiTrash2 color="#3d314a" size={15} />}
                     sx={{
                       borderRadius: 2,
-                      px: 4,
+                      px: 3,
                       backgroundColor: "#d3d0c2ff",
                       color: "#2d232e",
                       textTransform: "none",
@@ -359,14 +363,14 @@ const Home = () => {
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setFormOpen(false)} color="secondary">
+        <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
+          <Button onClick={() => setFormOpen(false)}>
             Cancel
           </Button>
           <Button
             onClick={handleAddSubject}
             variant="contained"
-            color="primary"
+            sx={{ bgcolor: "#0077B5" }}
             startIcon={<AddIcon />}
           >
             Add

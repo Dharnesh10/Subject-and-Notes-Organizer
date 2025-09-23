@@ -8,6 +8,8 @@ import OnlineContent from './components/OnlineContent';
 import Unauthorized from './components/Unauthorized';
 import TopicsPage from './components/Topics';
 import NotesPage from './components/Notes';
+import Saved from './components/Saved';
+import Liked from './components/Liked';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
@@ -22,6 +24,8 @@ function App() {
         <Route path='/online-content' element={<OnlineContent />} />
         <Route path="/subjects/:id/topics" element={<TopicsPage />} />
         <Route path="/topics/:id/notes" element={<NotesPage />} />
+        <Route path="/saved" element={<Saved /> } />
+        <Route path="/liked" element={<Liked />} />
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<Signup />} />
