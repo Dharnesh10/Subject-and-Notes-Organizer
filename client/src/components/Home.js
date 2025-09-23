@@ -383,7 +383,7 @@ const Home = () => {
             undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+        <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
           <Button
             onClick={() => setOpenDialog(false)}
             sx={{

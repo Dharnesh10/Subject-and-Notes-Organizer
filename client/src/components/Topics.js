@@ -9,8 +9,6 @@ import {
   Button,
   Box,
   IconButton,
-  Menu,
-  MenuItem,
   useMediaQuery,
   Paper,
   TextField,
@@ -22,22 +20,21 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 function TopicsPage() {
-  const { id: subjectId } = useParams(); // Subject ID from route
+  const { id: subjectId } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [topics, setTopics] = React.useState([]);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [menuTopicId, setMenuTopicId] = React.useState(null);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [newTopic, setNewTopic] = React.useState("");
   const [snackbar, setSnackbar] = React.useState({
@@ -46,12 +43,14 @@ function TopicsPage() {
     severity: "success",
   });
 
-  // edit dialog state
+  // Edit dialog state
   const [editOpen, setEditOpen] = React.useState(false);
   const [editTopic, setEditTopic] = React.useState(null);
   const [editTitle, setEditTitle] = React.useState("");
 
-  const open = Boolean(anchorEl);
+  // Delete confirmation dialog state
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [deleteTopicId, setDeleteTopicId] = React.useState(null);
 
   // Fetch topics
   React.useEffect(() => {
@@ -78,89 +77,61 @@ function TopicsPage() {
       const res = await API.post(`/topics/${subjectId}`, { title: newTopic });
       setTopics([res.data, ...topics]);
       setNewTopic("");
-      setSnackbar({
-        open: true,
-        message: "Topic added",
-        severity: "success",
-      });
+      setSnackbar({ open: true, message: "Topic added", severity: "success" });
     } catch (err) {
       console.error(err);
-      setSnackbar({
-        open: true,
-        message: "Failed to add topic",
-        severity: "error",
-      });
+      setSnackbar({ open: true, message: "Failed to add topic", severity: "error" });
     }
   };
 
-  // Open edit modal
+  // Edit topic
   const handleOpenEdit = (topic) => {
     setEditTopic(topic);
     setEditTitle(topic.title);
     setEditOpen(true);
   };
 
-  // Close edit modal
   const handleCloseEdit = () => {
     setEditOpen(false);
     setEditTopic(null);
     setEditTitle("");
   };
 
-  // Save edit
   const handleSaveEdit = async () => {
     if (!editTitle.trim()) return;
     try {
-      const res = await API.put(`/topics/${editTopic._id}`, {
-        title: editTitle,
-      });
-      setTopics(
-        topics.map((t) => (t._id === editTopic._id ? res.data : t))
-      );
-      setSnackbar({
-        open: true,
-        message: "Topic updated",
-        severity: "success",
-      });
+      const res = await API.put(`/topics/${editTopic._id}`, { title: editTitle });
+      setTopics(topics.map((t) => (t._id === editTopic._id ? res.data : t)));
+      setSnackbar({ open: true, message: "Topic updated", severity: "success" });
       handleCloseEdit();
     } catch (err) {
       console.error(err);
-      setSnackbar({
-        open: true,
-        message: "Failed to update topic",
-        severity: "error",
-      });
+      setSnackbar({ open: true, message: "Failed to update topic", severity: "error" });
     }
   };
 
   // Delete topic
-  const handleDeleteTopic = async (topicId) => {
+  const handleOpenDelete = (topicId) => {
+    setDeleteTopicId(topicId);
+    setDeleteOpen(true);
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteOpen(false);
+    setDeleteTopicId(null);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await API.delete(`/topics/${topicId}`);
-      setTopics(topics.filter((t) => t._id !== topicId));
-      setSnackbar({
-        open: true,
-        message: "Topic deleted",
-        severity: "success",
-      });
+      await API.delete(`/topics/${deleteTopicId}`);
+      setTopics(topics.filter((t) => t._id !== deleteTopicId));
+      setSnackbar({ open: true, message: "Topic deleted", severity: "success" });
     } catch (err) {
       console.error(err);
-      setSnackbar({
-        open: true,
-        message: "Failed to delete topic",
-        severity: "error",
-      });
+      setSnackbar({ open: true, message: "Failed to delete topic", severity: "error" });
+    } finally {
+      handleCloseDelete();
     }
-  };
-
-  const handleMenuClick = (event, topicId) => {
-    setAnchorEl(event.currentTarget);
-    setMenuTopicId(topicId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setMenuTopicId(null);
   };
 
   const filteredTopics = topics.filter((t) =>
@@ -191,10 +162,7 @@ function TopicsPage() {
             </InputAdornment>
           ),
         }}
-        sx={{
-          mb: 2,
-          "& .MuiOutlinedInput-root": { borderRadius: "50px" },
-        }}
+        sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: "50px" } }}
       />
 
       {/* Topics List */}
@@ -214,56 +182,41 @@ function TopicsPage() {
             {filteredTopics.map((topic, index) => (
               <ListItem
                 key={topic._id}
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    onClick={(e) => handleMenuClick(e, topic._id)}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                }
                 sx={{
-                  borderBottom:
-                    index !== filteredTopics.length - 1
-                      ? "1px solid #e0eaf1"
-                      : "none",
+                  borderBottom: index !== filteredTopics.length - 1 ? "1px solid #e0eaf1" : "none",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
                 }}
               >
                 <ListItemButton
+                  sx={{ flex: 1 }}
                   onClick={() => navigate(`/topics/${topic._id}/notes`)}
                 >
                   <ListItemText
-                    primary={
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          width: "100%",
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: isMobile ? "0.9rem" : "1rem",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {topic.title}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ ml: 2, whiteSpace: "nowrap" }}
-                        >Created On: {" "}
-                          {new Date(topic.createdAt).toLocaleString(undefined, {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
-                        </Typography>
-                      </Box>
-                    }
+                    primary={topic.title}
+                    secondary={new Date(topic.createdAt).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   />
                 </ListItemButton>
+
+                {/* Action icons */}
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => navigate(`/topics/${topic._id}/notes`)}
+                  >
+                    <VisibilityIcon />
+                  </IconButton>
+                  <IconButton color="secondary" onClick={() => handleOpenEdit(topic)}>
+                    <FiEdit color="#1976d2" size={20} />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleOpenDelete(topic._id)}>
+                    <FiTrash2 color="#bb2124" size={20} />
+                  </IconButton>
+                </Box>
               </ListItem>
             ))}
           </List>
@@ -310,46 +263,11 @@ function TopicsPage() {
           color="primary"
           onClick={handleAddTopic}
           startIcon={<AddIcon />}
-          sx={{
-            minWidth: "150px",
-            borderRadius: "50px",
-            textTransform: "none",
-            borderWidth: 2,
-            "&:hover": { borderWidth: 2 },
-          }}
+          sx={{ minWidth: "150px", borderRadius: "50px", textTransform: "none", borderWidth: 2, "&:hover": { borderWidth: 2 } }}
         >
           ADD TOPIC
         </Button>
       </Box>
-
-      {/* Menu */}
-      <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-        <MenuItem
-          onClick={() => {
-            navigate(`/topics/${menuTopicId}/notes`);
-            handleMenuClose();
-          }}
-        >
-          View
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            const topic = topics.find((t) => t._id === menuTopicId);
-            handleOpenEdit(topic);
-            handleMenuClose();
-          }}
-        >
-          Edit
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleDeleteTopic(menuTopicId);
-            handleMenuClose();
-          }}
-        >
-          Delete
-        </MenuItem>
-      </Menu>
 
       {/* Edit Dialog */}
       <Dialog
@@ -357,12 +275,7 @@ function TopicsPage() {
         onClose={handleCloseEdit}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            p: 1,
-          },
-        }}
+        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
       >
         <DialogTitle>Edit Topic</DialogTitle>
         <DialogContent>
@@ -374,13 +287,27 @@ function TopicsPage() {
             sx={{ mt: 2 }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEdit} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveEdit} variant="contained" color="primary">
-            Save
-          </Button>
+        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
+          <Button onClick={handleCloseEdit}>Cancel</Button>
+          <Button onClick={handleSaveEdit} variant="contained" sx={{ bgcolor: "#0077B5" }}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteOpen}
+        onClose={handleCloseDelete}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this topic? This action cannot be undone.
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
+          <Button onClick={handleCloseDelete}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} variant="contained" color="error">Delete</Button>
         </DialogActions>
       </Dialog>
 
