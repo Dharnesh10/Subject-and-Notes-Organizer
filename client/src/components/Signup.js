@@ -22,7 +22,7 @@ const Signup = () => {
     e.preventDefault();
     setError('');
     try {
-      const response = await api.post('/api/users', formData);
+      const response = await api.post('/users', formData);
       navigate('/login');
       console.log(response.data);
     } catch (error) {
@@ -30,7 +30,6 @@ const Signup = () => {
       setError('Failed to sign up');
     }
   };
-  console.log("Submitting formData:", formData);
 
 
   return (

@@ -20,7 +20,14 @@ import ListItemText from '@mui/material/ListItemText';
 import SearchIcon from '@mui/icons-material/Search';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlined';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Switch from '@mui/material/Switch';
 import { jwtDecode } from 'jwt-decode';
 
 const drawerWidth = 300;
@@ -72,10 +79,28 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 export default function PersistentDrawerLeft({ children }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [name, setName] = React.useState('User');
   const [email, setEmail] = React.useState('');
+  const [darkMode, setDarkMode] = React.useState(false);
+
+  // menu state
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const openMenu = Boolean(anchorEl);
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
 
   // Decode token once when component mounts
   React.useEffect(() => {
@@ -84,20 +109,24 @@ export default function PersistentDrawerLeft({ children }) {
 
     try {
       const decoded = jwtDecode(token);
+      const userName = decoded.name || decoded.userName || 'User';
       const userEmail = decoded.email || decoded.userEmail || '';
       setEmail(userEmail);
+      setName(userName);
     } catch (error) {
       console.error('Failed to decode token:', error);
       setEmail('');
+      setName('User');
       localStorage.removeItem('token');
     }
   }, []);
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', bgcolor: "#fafafa" }}>
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar>
+          {/* Menu button (left) */}
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -107,12 +136,74 @@ export default function PersistentDrawerLeft({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ display: 'flex', alignItems: 'center' }}>
+
+          {/* Logo / Title (left-aligned) */}
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
             <ImportContactsOutlinedIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
             Notesmaker
           </Typography>
+
+          {/* Right side (notifications + account + username) */}
+          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.1 }}>
+            <IconButton color="inherit">
+              <NotificationsIcon fontSize="medium" />
+            </IconButton>
+
+            <IconButton color="inherit" onClick={handleMenuOpen}>
+              <AccountCircleIcon fontSize="medium" />
+            </IconButton>
+
+            {/* <Typography
+              variant="body2"
+              fontWeight="light"
+              onClick={handleMenuOpen}
+              sx={{ cursor: 'pointer' }}
+            >
+              {name || "User"}
+            </Typography> */}
+          </Box>
         </Toolbar>
       </AppBar>
+
+      {/* Account Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        {/* Email display */}
+        <MenuItem disabled>
+          <Typography variant="body2">{email || "No email available"}</Typography>
+        </MenuItem>
+
+        {/* Dark/Light mode toggle */}
+        <MenuItem>
+          <ListItemIcon>
+            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+          </ListItemIcon>
+          <ListItemText primary="Toggle Theme" />
+          <Switch
+            checked={darkMode}
+            onChange={() => setDarkMode(!darkMode)}
+            color="default"
+          />
+        </MenuItem>
+
+        {/* Logout */}
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary="Logout" />
+        </MenuItem>
+      </Menu>
 
       <Drawer
         sx={{
@@ -129,16 +220,14 @@ export default function PersistentDrawerLeft({ children }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            px: 2, // horizontal padding
+            px: 2,
           }}
         >
-          {/* Content on the left (username/email) */}
           <Box>
-            <Typography variant="subtitle1">Welcome, User!</Typography>
+            <Typography variant="subtitle1">Welcome, {name}!</Typography>
             {/* <Typography variant="body2" color="text.secondary">{email || 'No email available'}</Typography> */}
           </Box>
 
-          {/* Close icon on the right */}
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
@@ -170,7 +259,7 @@ export default function PersistentDrawerLeft({ children }) {
 
         <List>
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="/login" onClick={() => localStorage.removeItem('token')}>
+            <ListItemButton component={Link} to="/login" onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon />
               </ListItemIcon>

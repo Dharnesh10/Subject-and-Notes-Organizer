@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import Main from './components/Home';
 import OnlineContent from './components/OnlineContent';
 import Unauthorized from './components/Unauthorized';
+import TopicsPage from './components/Topics';
+import NotesPage from './components/Notes';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
@@ -18,6 +20,8 @@ function App() {
       <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route path='/' element={<Main />} />
         <Route path='/online-content' element={<OnlineContent />} />
+        <Route path="/subjects/:id/topics" element={<TopicsPage />} />
+        <Route path="/topics/:id/notes" element={<NotesPage />} />
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<Signup />} />

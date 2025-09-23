@@ -1,6 +1,9 @@
 import React from "react";
 import API from "../api";
-import { Grid, Card, CardContent,
+import {
+  Grid,
+  Card,
+  CardContent,
   CardActions,
   Typography,
   Button,
@@ -17,20 +20,15 @@ import { Grid, Card, CardContent,
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AddIcon from "@mui/icons-material/Add";
-import DescriptionIcon from "@mui/icons-material/Description";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { useParams } from "react-router-dom";
 
-
-// ✅ helper component for truncating subject name with show more/less
+// ✅ helper component for truncating text
 const TruncatedText = ({ text, limit = 25 }) => {
   const [expanded, setExpanded] = React.useState(false);
-
   if (!text) return "No Name";
-
   const isTruncated = text.length > limit;
   const displayText = expanded ? text : text.slice(0, limit);
 
@@ -40,7 +38,7 @@ const TruncatedText = ({ text, limit = 25 }) => {
       {isTruncated && (
         <span
           style={{
-            color: "rgba(0,0,0,0.6)", // muted color
+            color: "rgba(0,0,0,0.6)",
             cursor: "pointer",
             marginLeft: "6px",
             fontSize: "0.85rem",
@@ -59,44 +57,37 @@ const Home = () => {
   const [subjectDescription, setSubjectDescription] = React.useState("");
   const [items, setItems] = React.useState([]);
 
-  // ✅ search state
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  // ✅ new states for delete confirmation
   const [openDialog, setOpenDialog] = React.useState(false);
   const [deleteIndex, setDeleteIndex] = React.useState(null);
 
-  // ✅ snackbar states
+  const [formOpen, setFormOpen] = React.useState(false); // ✅ overlay state
+
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
 
-  // ✅ user info states
   const [name, setName] = React.useState("Guest");
 
-  // ✅ auth check and redirect to login if no token
   const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      // ✅ no token → log out
-      localStorage.removeItem("token"); // clear storage just in case
-      navigate("/login"); // redirect to login page
+      localStorage.removeItem("token");
+      navigate("/login");
     }
   }, [navigate]);
 
-  // ✅ decode token to get user info
+  // ✅ decode token
   React.useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return; // No token, do nothing
+    if (!token) return;
     try {
       const decoded = jwtDecode(token);
-
       const username = decoded.name || decoded.username || decoded.sub;
-
       setName(username);
-
     } catch (error) {
       console.error("Failed to decode token:", error);
       setName("Guest");
@@ -104,78 +95,70 @@ const Home = () => {
     }
   }, []);
 
- // Fetch all subjects for logged-in user
   const fetchSubjects = async () => {
     try {
-      const res = await API.get("/api/subjects"); // ✅ no id → fetch all for logged-in user
+      const res = await API.get("/subjects");
       setItems(res.data);
     } catch (err) {
       console.error("Error fetching subjects:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/unauthorized");
+        navigate("/login");
       }
     }
   };
 
-  // Fetch a single subject (only if it belongs to logged-in user)
   const fetchSubjectById = async (id) => {
     try {
-      const res = await API.get(`/api/subjects/${id}`); // ✅ will 404 if subject not owned by user
-      setItems([res.data]); // wrap in array so UI can still map it
+      const res = await API.get(`/subjects/${id}`);
+      setItems([res.data]);
     } catch (err) {
       console.error("Error fetching subject:", err.response?.data || err.message);
       if (err.response?.status === 401) {
-        navigate("/unauthorized");
+        navigate("/login");
       } else if (err.response?.status === 404) {
-        setItems([]); // not found or access denied → clear
+        setItems([]);
       }
     }
   };
 
   React.useEffect(() => {
     if (id) {
-      fetchSubjectById(id); // fetch one subject
+      fetchSubjectById(id);
     } else {
-      fetchSubjects(); // fetch all subjects for this user
+      fetchSubjects();
     }
   }, [id]);
 
-
-  // Add a new subject
+  // ✅ Add subject
   const handleAddSubject = async () => {
     if (!subjectName || !subjectDescription) return;
-
     const newSubject = {
       subjectName,
       subjectContent: subjectDescription,
     };
-
     try {
-      const res = await API.post("/api/subjects", newSubject);
+      const res = await API.post("/subjects", newSubject);
       setItems([res.data.subject, ...items]);
       setSubjectName("");
       setSubjectDescription("");
+      setFormOpen(false); // close overlay after success
     } catch (err) {
       console.error("Error adding subject:", err);
       alert(err.response?.data?.error || "Something went wrong");
     }
   };
 
-  // ✅ open delete confirmation dialog
   const handleOpenDelete = (index) => {
     setDeleteIndex(index);
     setOpenDialog(true);
   };
 
-  // ✅ confirm delete
   const handleConfirmDelete = async () => {
     try {
       const subjectToDelete = items[deleteIndex];
-      await API.delete(`/api/subjects/${subjectToDelete._id}`);
+      await API.delete(`/subjects/${subjectToDelete._id}`);
       const updatedItems = items.filter((_, i) => i !== deleteIndex);
       setItems(updatedItems);
-
-      // ✅ show success message
       setSnackbarMessage("Item deleted successfully");
       setSnackbarOpen(true);
     } catch (err) {
@@ -187,7 +170,6 @@ const Home = () => {
     }
   };
 
-  // ✅ filter subjects based on search query
   const filteredItems = items.filter(
     (item) =>
       item.subjectName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -196,67 +178,35 @@ const Home = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 4, minHeight: "100vh" }}>
-      <Typography
-        variant="h5"
-        fontWeight="bold"
-        sx={{ mb: 3, textAlign: "left" }}
-      >
-        Welcome, {name} !
-      </Typography>
 
-      {/* Add subject form */}
+      {/* ✅ Header with Title + Add button */}
       <Box
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleAddSubject();
-        }}
         sx={{
           display: "flex",
-          gap: 2,
-          mb: 2,
-          flexWrap: "wrap",
+          justifyContent: "space-between",
           alignItems: "center",
+          mb: 3,
         }}
       >
-        <TextField
-          placeholder="Subject Name"
-          variant="outlined"
-          size="small"
-          value={subjectName}
-          onChange={(e) => setSubjectName(e.target.value)}
-          sx={{
-            flex: { xs: "1 1 100%", sm: "1 1 auto" },
-            minWidth: { xs: "100%", sm: "auto" },
-          }}
-        />
-        <TextField
-          placeholder="Subject Description"
-          variant="outlined"
-          size="small"
-          value={subjectDescription}
-          onChange={(e) => setSubjectDescription(e.target.value)}
-          sx={{
-            flex: { xs: "1 1 100%", sm: "2 1 auto" },
-            minWidth: { xs: "100%", sm: "auto" },
-          }}
-        />
+        <Typography variant="h5" fontWeight="bold">
+          Created Subjects
+        </Typography>
+
         <Button
-          type="submit"
-          variant="contained"
+          variant="outlined"
           startIcon={<AddIcon />}
+          onClick={() => setFormOpen(true)}
           sx={{
-            backgroundColor: "#1877f2",
-            "&:hover": { backgroundColor: "#3286f4ff" },
             textTransform: "none",
-            flex: { xs: "1 1 100%", sm: "0 0 auto" },
+            px: 3,
+            fontWeight: 500,
           }}
         >
           Add Subject
         </Button>
       </Box>
 
-      {/* ✅ Search Bar */}
+            {/* ✅ Search Bar */}
       <TextField
         placeholder="Search subjects..."
         variant="outlined"
@@ -266,7 +216,6 @@ const Home = () => {
         onChange={(e) => setSearchQuery(e.target.value)}
         sx={{
           mb: 4,
-          borderRadius: "50px",
           "& .MuiOutlinedInput-root": {
             borderRadius: "50px",
           },
@@ -323,41 +272,44 @@ const Home = () => {
                     <CalendarTodayIcon fontSize="small" sx={{ mr: 0.5 }} />
                     <Typography variant="body2">
                       Created At:{" "}
-                      {new Date(item.createdAt || Date.now()).toLocaleDateString(
-                        "en-GB"
-                      )}
+                      {new Date(item.createdAt || Date.now()).toLocaleDateString("en-GB")}
                     </Typography>
                   </Box>
 
                   <Box display="flex" color="text.secondary">
                     <Typography variant="body2" color="text.secondary">
-                      <TruncatedText text={"Description: " + (item.subjectContent || "No Description")} limit={45} />
+                      <TruncatedText
+                        text={"Description: " + (item.subjectContent || "No Description")}
+                        limit={45}
+                      />
                     </Typography>
                   </Box>
                 </CardContent>
 
                 <CardActions sx={{ p: 2, justifyContent: "center" }}>
                   <Button
+                    onClick={() => navigate(`/subjects/${item._id}/topics`)}
                     sx={{
                       borderRadius: 2,
                       px: 4,
-                      backgroundColor: "#1877f2",
-                      color: "white",
+                      backgroundColor: "#3d314a",
+                      color: "#e0ddcf",
                       textTransform: "none",
-                      "&:hover": { backgroundColor: "#3286f4ff" },
+                      "&:hover": { backgroundColor: "#483b56ff" },
                     }}
                   >
                     View
                   </Button>
+
                   <Button
                     onClick={() => handleOpenDelete(index)}
                     sx={{
                       borderRadius: 2,
                       px: 4,
-                      backgroundColor: "#f44336",
-                      color: "white",
+                      backgroundColor: "#d3d0c2ff",
+                      color: "#2d232e",
                       textTransform: "none",
-                      "&:hover": { backgroundColor: "#f35a4f" },
+                      "&:hover": { backgroundColor: "#e0ddcf" },
                     }}
                   >
                     Delete
@@ -376,6 +328,51 @@ const Home = () => {
           </Typography>
         )}
       </Grid>
+
+      {/* ✅ Add Subject Form Overlay */}
+      <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Subject</DialogTitle>
+        <DialogContent>
+          <Box
+            component="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAddSubject();
+            }}
+            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+          >
+            <TextField
+              placeholder="Subject Name (e.g., Chemistry)"
+              variant="outlined"
+              size="small"
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              placeholder="Subject Overview (e.g., Organic Chemistry)"
+              variant="outlined"
+              size="small"
+              value={subjectDescription}
+              onChange={(e) => setSubjectDescription(e.target.value)}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFormOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAddSubject}
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* ✅ Delete Confirmation Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -417,18 +414,14 @@ const Home = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ✅ Snackbar for delete success */}
+      {/* ✅ Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: "100%" }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
