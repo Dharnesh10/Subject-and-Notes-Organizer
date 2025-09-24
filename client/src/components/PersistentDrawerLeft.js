@@ -254,13 +254,14 @@ export default function PersistentDrawerLeft({ children }) {
           </ListItem>
 
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="/online-content">
+            <ListItemButton component={Link} to="/public/topics">
               <ListItemIcon>
                 <SearchIcon />
               </ListItemIcon>
-              <ListItemText primary="Search Online" />
+              <ListItemText primary="Search Topics Online" />
             </ListItemButton>
           </ListItem>
+          
         </List>
 
         {/* Personal dropdown */}

@@ -8,6 +8,8 @@ import OnlineContent from './components/OnlineContent';
 import Unauthorized from './components/Unauthorized';
 import TopicsPage from './components/Topics';
 import NotesPage from './components/Notes';
+import PublicTopics from './components/PublicTopics';
+import PublicTopicPage from './components/PublicTopicPage';
 import Saved from './components/Saved';
 import Liked from './components/Liked';
 
@@ -21,9 +23,10 @@ function App() {
     <Routes>
       <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route path='/' element={<Main />} />
-        <Route path='/online-content' element={<OnlineContent />} />
         <Route path="/subjects/:id/topics" element={<TopicsPage />} />
         <Route path="/topics/:id/notes" element={<NotesPage />} />
+        <Route path="/public/topics" element={<PublicTopics />} />
+        <Route path="/public/topics/:topicId" element={<PublicTopicPage />} />
         <Route path="/saved" element={<Saved /> } />
         <Route path="/liked" element={<Liked />} />
       </Route>

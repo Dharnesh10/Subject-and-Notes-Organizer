@@ -24,6 +24,8 @@ import { useTheme } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import PublishIcon from "@mui/icons-material/Publish";
+import UnpublishedIcon from "@mui/icons-material/VisibilityOff";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
@@ -51,6 +53,10 @@ function TopicsPage() {
   // Delete confirmation dialog state
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [deleteTopicId, setDeleteTopicId] = React.useState(null);
+
+  // Publish confirmation dialog state
+  const [publishDialogOpen, setPublishDialogOpen] = React.useState(false);
+  const [publishTopic, setPublishTopic] = React.useState(null);
 
   // Fetch topics
   React.useEffect(() => {
@@ -134,10 +140,41 @@ function TopicsPage() {
     }
   };
 
+  // Open publish confirmation dialog
+  const handleOpenPublishDialog = (topic) => {
+    setPublishTopic(topic);
+    setPublishDialogOpen(true);
+  };
+
+  const handleClosePublishDialog = () => {
+    setPublishDialogOpen(false);
+    setPublishTopic(null);
+  };
+
+  // Confirm publish/unpublish
+  const handleConfirmPublish = async () => {
+    try {
+      const res = await API.put(`/topics/${publishTopic._id}/publish`, {
+        published: !publishTopic.published,
+      });
+      setTopics(topics.map((t) => (t._id === publishTopic._id ? res.data.topic : t)));
+      setSnackbar({
+        open: true,
+        message: `Topic ${res.data.topic.published ? "published" : "unpublished"}`,
+        severity: "success",
+      });
+    } catch (err) {
+      console.error(err);
+      setSnackbar({ open: true, message: "Failed to update publish status", severity: "error" });
+    } finally {
+      handleClosePublishDialog();
+    }
+  };
+
   const filteredTopics = topics.filter((t) =>
     t.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-console.log(topics)
+
   return (
     <Container maxWidth="lg" sx={{ mt: 2, mb: 2, px: isMobile ? 1 : 3 }}>
       <Typography
@@ -205,15 +242,23 @@ console.log(topics)
 
                 {/* Action icons */}
                 <Box sx={{ display: "flex", gap: 1 }}>
-                  <IconButton
-                    color="primary"
-                    onClick={() => navigate(`/topics/${topic._id}/notes`)}
-                  >
+                  <IconButton color="primary" onClick={() => navigate(`/topics/${topic._id}/notes`)}>
                     <VisibilityIcon />
                   </IconButton>
+
+                  {/* Publish/Unpublish */}
+                  <IconButton
+                    color={topic.published ? "success" : "default"}
+                    onClick={() => handleOpenPublishDialog(topic)}
+                    title={topic.published ? "Unpublish" : "Publish"}
+                  >
+                    {topic.published ? <UnpublishedIcon /> : <PublishIcon />}
+                  </IconButton>
+
                   <IconButton color="secondary" onClick={() => handleOpenEdit(topic)}>
                     <FiEdit color="#1976d2" size={20} />
                   </IconButton>
+
                   <IconButton color="error" onClick={() => handleOpenDelete(topic._id)}>
                     <FiTrash2 color="#bb2124" size={20} />
                   </IconButton>
@@ -309,6 +354,32 @@ console.log(topics)
         <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
           <Button onClick={handleCloseDelete}>Cancel</Button>
           <Button onClick={handleConfirmDelete} variant="contained" color="error">Delete</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Publish/Unpublish Confirmation Dialog */}
+      <Dialog
+        open={publishDialogOpen}
+        onClose={handleClosePublishDialog}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+      >
+        <DialogTitle>{publishTopic?.published ? "Unpublish Topic" : "Publish Topic"}</DialogTitle>
+        <DialogContent>
+          {publishTopic?.published
+            ? "Are you sure you want to unpublish this topic? Users will no longer be able to see it."
+            : "If you publish this topic, all users will be able to see it. Are you sure you want to publish?"}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
+          <Button onClick={handleClosePublishDialog}>Cancel</Button>
+          <Button
+            onClick={handleConfirmPublish}
+            variant="contained"
+            color={publishTopic?.published ? "error" : "success"}
+          >
+            {publishTopic?.published ? "Unpublish" : "Publish"}
+          </Button>
         </DialogActions>
       </Dialog>
 
