@@ -1,6 +1,10 @@
 const { Subject, subjectValidationSchema } = require("../models/subject");
 const authMiddleware = require("../middleware/auth");
 const router = require("express").Router();
+const { Topic } = require("../models/topic");
+const { Note } = require("../models/note");
+
+// ------------------ SUBJECT ROUTES ------------------
 
 // ✅ GET all subjects for logged-in user
 router.get("/", authMiddleware, async (req, res) => {
@@ -57,16 +61,32 @@ router.post("/", authMiddleware, async (req, res) => {
 });
 
 // ------------------ DELETE a subject (only if belongs to logged-in user) ------------------
+// DELETE a subject (only if belongs to logged-in user)
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const subject = await Subject.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+
     if (!subject) return res.status(404).json({ error: "Subject not found or you do not have access" });
 
-    res.status(200).json({ message: "Subject deleted successfully" });
+    // 1. Find topics for this subject
+    const topics = await Topic.find({ subjectId: subject._id });
+
+    // 2. Get all topic IDs
+    const topicIds = topics.map((t) => t._id);
+
+    // 3. Delete notes for all those topics
+    await Note.deleteMany({ topicId: { $in: topicIds } });
+
+    // 4. Delete the topics themselves
+    await Topic.deleteMany({ subjectId: subject._id });
+
+    res.status(200).json({ message: "Subject, topics, and notes deleted successfully" });
+
   } catch (err) {
     console.error("Error deleting subject:", err);
     res.status(500).json({ error: "Error deleting subject" });
   }
 });
+
 
 module.exports = router;

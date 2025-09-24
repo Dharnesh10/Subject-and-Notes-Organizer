@@ -326,9 +326,9 @@ const Home = () => {
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={{ mt: 4, mx: "auto" }}
+            sx={{ mt: 4, mx: "auto", fontStyle: "italic" }}
           >
-            No subjects found
+            No subjects found !
           </Typography>
         )}
       </Grid>

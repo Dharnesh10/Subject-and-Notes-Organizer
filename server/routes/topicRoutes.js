@@ -1,6 +1,7 @@
 const express = require("express");
 const authMiddleware = require("../middleware/auth");
 const { Topic } = require("../models/topic"); // create topic model
+const { Note } = require("../models/note");
 const router = express.Router();
 
 // GET all topics for a subject
@@ -56,8 +57,14 @@ router.delete("/:topicId", authMiddleware, async (req, res) => {
       _id: req.params.topicId,
       userId: req.user.id,
     });
+
     if (!topic) return res.status(404).json({ error: "Topic not found" });
+
+    // Optionally, delete all notes associated with this topic
+    await Note.deleteMany({ topicId: topic._id });
+
     res.json({ message: "Topic deleted successfully" });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error deleting topic" });
