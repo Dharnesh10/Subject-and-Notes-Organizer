@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import API from "../api";
 import {
   Grid,
@@ -21,13 +21,11 @@ import {
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
-import { FiEdit } from "react-icons/fi";
-import { FiTrash2 } from "react-icons/fi";
-import { useEffect } from "react";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
-// ✅ helper component for truncating text
+// Helper component for truncating text
 const TruncatedText = ({ text, limit = 25 }) => {
   const [expanded, setExpanded] = React.useState(false);
   if (!text) return "No Name";
@@ -58,17 +56,12 @@ const Home = () => {
   const [subjectName, setSubjectName] = React.useState("");
   const [subjectDescription, setSubjectDescription] = React.useState("");
   const [items, setItems] = React.useState([]);
-
   const [searchQuery, setSearchQuery] = React.useState("");
-
   const [openDialog, setOpenDialog] = React.useState(false);
   const [deleteIndex, setDeleteIndex] = React.useState(null);
-
-  const [formOpen, setFormOpen] = React.useState(false); // ✅ overlay state
-
+  const [formOpen, setFormOpen] = React.useState(false);
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
-
   const [name, setName] = React.useState("Guest");
 
   const navigate = useNavigate();
@@ -82,7 +75,7 @@ const Home = () => {
     }
   }, [navigate]);
 
-  // ✅ decode token
+  // Decode token
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -103,9 +96,7 @@ const Home = () => {
       setItems(res.data);
     } catch (err) {
       console.error("Error fetching subjects:", err.response?.data || err.message);
-      if (err.response?.status === 401) {
-        navigate("/login");
-      }
+      if (err.response?.status === 401) navigate("/login");
     }
   };
 
@@ -115,35 +106,26 @@ const Home = () => {
       setItems([res.data]);
     } catch (err) {
       console.error("Error fetching subject:", err.response?.data || err.message);
-      if (err.response?.status === 401) {
-        navigate("/login");
-      } else if (err.response?.status === 404) {
-        setItems([]);
-      }
+      if (err.response?.status === 401) navigate("/login");
+      else if (err.response?.status === 404) setItems([]);
     }
   };
 
   React.useEffect(() => {
-    if (id) {
-      fetchSubjectById(id);
-    } else {
-      fetchSubjects();
-    }
+    if (id) fetchSubjectById(id);
+    else fetchSubjects();
   }, [id]);
 
-  // ✅ Add subject
+  // Add subject
   const handleAddSubject = async () => {
     if (!subjectName || !subjectDescription) return;
-    const newSubject = {
-      subjectName,
-      subjectContent: subjectDescription,
-    };
+    const newSubject = { subjectName, subjectContent: subjectDescription };
     try {
       const res = await API.post("/subjects", newSubject);
       setItems([res.data.subject, ...items]);
       setSubjectName("");
       setSubjectDescription("");
-      setFormOpen(false); // close overlay after success
+      setFormOpen(false);
     } catch (err) {
       console.error("Error adding subject:", err);
       alert(err.response?.data?.error || "Something went wrong");
@@ -180,8 +162,7 @@ const Home = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 4, minHeight: "100vh" }}>
-
-      {/* ✅ Header with Title + Add button */}
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -193,22 +174,17 @@ const Home = () => {
         <Typography variant="h5" fontWeight="bold">
           Created Subjects
         </Typography>
-
         <Button
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={() => setFormOpen(true)}
-          sx={{
-            textTransform: "none",
-            px: 3,
-            fontWeight: 500,
-          }}
+          sx={{ textTransform: "none", px: 3, fontWeight: 500 }}
         >
           Add Subject
         </Button>
       </Box>
 
-            {/* ✅ Search Bar */}
+      {/* Search */}
       <TextField
         placeholder="Search subjects..."
         variant="outlined"
@@ -216,12 +192,7 @@ const Home = () => {
         fullWidth
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        sx={{
-          mb: 4,
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "50px",
-          },
-        }}
+        sx={{ mb: 4, "& .MuiOutlinedInput-root": { borderRadius: "50px" } }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -232,95 +203,97 @@ const Home = () => {
       />
 
       {/* Subjects list */}
-      <Grid container spacing={4} justifyContent="flex-start" alignItems="flex-start">
+      <Grid
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
+            lg: "repeat(4, 1fr)",
+          },
+          gap: 4,
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
+        }}
+      >
         {filteredItems.length > 0 ? (
           filteredItems.map((item, index) => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
+            <Card
               key={index}
-              sx={{ display: "flex", justifyContent: "center" }}
+              sx={{
+                minHeight: 180,
+                width: 325,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                borderRadius: 3,
+                boxShadow: 4,
+                transition: "0.3s",
+                "&:hover": { boxShadow: 10, transform: "translateY(-5px)" },
+                mx: "auto",
+              }}
             >
-              <Card
+              <CardContent
                 sx={{
-                  minHeight: 180,
-                  width: 325,
+                  flexGrow: 1,
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "space-between",
-                  borderRadius: 3,
-                  boxShadow: 4,
-                  transition: "0.3s",
-                  "&:hover": { boxShadow: 10, transform: "translateY(-5px)" },
+                  alignItems: "flex-start",
+                  textAlign: "left",
+                  overflow: "hidden",
                 }}
               >
-                <CardContent
+                <Typography variant="h6" gutterBottom noWrap={false}>
+                  <TruncatedText text={item.subjectName || "No Name"} limit={20} />
+                </Typography>
+                <Box display="flex" mb={1} color="text.secondary">
+                  <CalendarTodayIcon fontSize="small" sx={{ mr: 0.5 }} />
+                  <Typography variant="body2">
+                    Created At:{" "}
+                    {new Date(item.createdAt || Date.now()).toLocaleDateString("en-GB")}
+                  </Typography>
+                </Box>
+                <Box display="flex" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary">
+                    <TruncatedText
+                      text={"Description: " + (item.subjectContent || "No Description")}
+                      limit={45}
+                    />
+                  </Typography>
+                </Box>
+              </CardContent>
+              <CardActions sx={{ p: 2, justifyContent: "center" }}>
+                <Button
+                  onClick={() => navigate(`/subjects/${item._id}/topics`)}
+                  startIcon={<FiEdit color="#e0ddcf" size={15} />}
                   sx={{
-                    flexGrow: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    textAlign: "left",
-                    overflow: "hidden",
+                    borderRadius: 2,
+                    px: 3,
+                    backgroundColor: "#3d314a",
+                    color: "#e0ddcf",
+                    textTransform: "none",
+                    "&:hover": { backgroundColor: "#483b56ff" },
                   }}
                 >
-                  <Typography variant="h6" gutterBottom noWrap={false}>
-                    <TruncatedText text={item.subjectName || "No Name"} limit={20} />
-                  </Typography>
-                  <Box display="flex" mb={1} color="text.secondary">
-                    <CalendarTodayIcon fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography variant="body2">
-                      Created At:{" "}
-                      {new Date(item.createdAt || Date.now()).toLocaleDateString("en-GB")}
-                    </Typography>
-                  </Box>
-
-                  <Box display="flex" color="text.secondary">
-                    <Typography variant="body2" color="text.secondary">
-                      <TruncatedText
-                        text={"Description: " + (item.subjectContent || "No Description")}
-                        limit={45}
-                      />
-                    </Typography>
-                  </Box>
-                </CardContent>
-
-                <CardActions sx={{ p: 2, justifyContent: "center" }}>
-                  <Button
-                    onClick={() => navigate(`/subjects/${item._id}/topics`)}
-                    startIcon={<FiEdit color="#e0ddcf" size={15} />}
-                    sx={{
-                      borderRadius: 2,
-                      px: 3,
-                      backgroundColor: "#3d314a",
-                      color: "#e0ddcf",
-                      textTransform: "none",
-                      "&:hover": { backgroundColor: "#483b56ff" },
-                    }}
-                  >
-                    View
-                  </Button>
-
-                  <Button
-                    onClick={() => handleOpenDelete(index)}
-                    startIcon={<FiTrash2 color="#3d314a" size={15} />}
-                    sx={{
-                      borderRadius: 2,
-                      px: 3,
-                      backgroundColor: "#d3d0c2ff",
-                      color: "#2d232e",
-                      textTransform: "none",
-                      "&:hover": { backgroundColor: "#e0ddcf" },
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
+                  View
+                </Button>
+                <Button
+                  onClick={() => handleOpenDelete(index)}
+                  startIcon={<FiTrash2 color="#3d314a" size={15} />}
+                  sx={{
+                    borderRadius: 2,
+                    px: 3,
+                    backgroundColor: "#d3d0c2ff",
+                    color: "#2d232e",
+                    textTransform: "none",
+                    "&:hover": { backgroundColor: "#e0ddcf" },
+                  }}
+                >
+                  Delete
+                </Button>
+              </CardActions>
+            </Card>
           ))
         ) : (
           <Typography
@@ -333,7 +306,7 @@ const Home = () => {
         )}
       </Grid>
 
-      {/* ✅ Add Subject Form Overlay */}
+      {/* Add Subject Form Overlay */}
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Add New Subject</DialogTitle>
         <DialogContent>
@@ -364,9 +337,7 @@ const Home = () => {
           </Box>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
-          <Button onClick={() => setFormOpen(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setFormOpen(false)}>Cancel</Button>
           <Button
             onClick={handleAddSubject}
             variant="contained"
@@ -378,13 +349,12 @@ const Home = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ✅ Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this subject? This action cannot be
-            undone.
+            Are you sure you want to delete this subject? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
@@ -418,7 +388,7 @@ const Home = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ✅ Snackbar */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
