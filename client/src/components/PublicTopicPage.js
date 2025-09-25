@@ -49,7 +49,36 @@ function PublicTopicPage() {
     fetchTopic();
   }, [topicId]);
 
-  if (!topic) return <p>Loading...</p>;
+  if (!topic)
+  return (
+    <Container maxWidth="sm" sx={{ mt: 8, textAlign: "center" }}>
+      <Box
+        sx={{
+          p: 5,
+          borderRadius: 3,
+          backgroundColor: "#fcdcdc", // light error background
+          border: "1px solid #f28b82", // soft red border
+          color: "#2d232e", // your main palette for text
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        }}
+      >
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          gutterBottom
+          sx={{ mb: 2 }}
+        >
+          Topic Unavailable !
+        </Typography>
+        <Typography variant="body1" sx={{ fontSize: "1rem", lineHeight: 1.6 }}>
+          This topic has been unpublished by the user. <br />
+          You will be able to view it once it is published again.
+        </Typography>
+      </Box>
+    </Container>
+  );
+
+
 
   const openImageDialog = (src) => {
     setImageDialogSrc(src);

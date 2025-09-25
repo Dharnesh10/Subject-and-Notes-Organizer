@@ -68,6 +68,46 @@ router.get("/public/:topicId", authMiddleware, async (req, res) => {
 
 /* ---------------- Private Routes ---------------- */
 
+// GET all topics saved by the user
+router.get("/saved", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const topics = await Topic.find({ saves: { $in: [userId] } })
+      .sort({ createdAt: -1 })
+      .populate("userId", "firstName lastName")
+      .lean();
+
+    const updatedTopics = topics.map((t) => ({
+      ...t,
+      likesCount: t.likes.length,
+      savesCount: t.saves.length,
+      liked: t.likes.some((id) => id.toString() === userId),
+      saved: true,
+    }));
+
+    res.json(updatedTopics);
+  } catch (err) {
+    console.error("Error fetching saved topics:", err);
+    res.status(500).json({ error: "Error fetching saved topics" });
+  }
+});
+
+// ⚠️ keep this one *below* the above route
+router.get("/:subjectId", authMiddleware, async (req, res) => {
+  try {
+    const topics = await Topic.find({
+      subjectId: req.params.subjectId,
+      userId: req.user.id,
+    }).sort({ createdAt: -1 });
+    res.json(topics);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error fetching topics" });
+  }
+});
+
+
 // GET all topics for a subject
 router.get("/:subjectId", authMiddleware, async (req, res) => {
   try {
