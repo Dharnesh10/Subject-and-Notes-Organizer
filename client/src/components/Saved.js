@@ -16,6 +16,7 @@ import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkAddedOutlinedIcon from '@mui/icons-material/BookmarkAddedOutlined';
 
 // Truncated text component
 const TruncatedText = ({ text, limit = 40 }) => {
@@ -109,9 +110,16 @@ function Saved() {
 
   return (
     <Box sx={{ flexGrow: 1, p: 4, minHeight: "100vh" }}>
-      <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
+
+      <Typography
+        variant="h5"
+        fontWeight="bold"
+        sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
+      >
+        <BookmarkAddedOutlinedIcon fontSize="medium" />
         Saved Topics
       </Typography>
+
 
       <Grid container spacing={4} justifyContent="flex-start">
         {savedTopics.length > 0 ? (

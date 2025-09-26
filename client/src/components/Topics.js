@@ -29,6 +29,7 @@ import UnpublishedIcon from "@mui/icons-material/VisibilityOff";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import TopicOutlinedIcon from '@mui/icons-material/TopicOutlined';
 
 function TopicsPage() {
   const { id: subjectId } = useParams();
@@ -180,9 +181,16 @@ function TopicsPage() {
       <Typography
         variant={isMobile ? "h6" : "h5"}
         gutterBottom
-        sx={{ fontWeight: "bold", fontFamily: "Arial" }}
-        textAlign={isMobile ? "center" : "left"}
+        sx={{
+          fontWeight: "bold",
+          fontFamily: "Arial",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          justifyContent: isMobile ? "center" : "flex-start",
+        }}
       >
+        <TopicOutlinedIcon fontSize="medium" />
         Topics
       </Typography>
 

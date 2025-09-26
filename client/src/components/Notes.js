@@ -20,6 +20,7 @@ import AddIcon from "@mui/icons-material/Add";
 import SortIcon from "@mui/icons-material/Sort";
 import CloseIcon from "@mui/icons-material/Close";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
 import API from "../api";
 import { useParams } from "react-router-dom";
 
@@ -177,7 +178,19 @@ function NotesPage() {
     <Container maxWidth="lg" sx={{ mt: 2, mb: 2 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", fontFamily: "Arial" }}>Notes</Typography>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "bold",
+            fontFamily: "Arial",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <ChecklistOutlinedIcon fontSize="medium" />
+          Notes
+        </Typography>
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button variant="outlined" startIcon={<SortIcon />} onClick={(e) => setSortAnchorEl(e.currentTarget)}>Sort</Button>
           <Button variant="outlined" startIcon={<AddIcon />} onClick={() => {
