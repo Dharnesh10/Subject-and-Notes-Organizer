@@ -16,6 +16,7 @@ import {
   Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import PublicOffOutlinedIcon from '@mui/icons-material/PublicOffOutlined';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -68,11 +69,13 @@ function PublicTopicPage() {
           gutterBottom
           sx={{ mb: 2 }}
         >
+          <PublicOffOutlinedIcon fontSize="medium" /> {" "}
           Topic Unavailable !
         </Typography>
+
         <Typography variant="body1" sx={{ fontSize: "1rem", lineHeight: 1.6 }}>
           This topic has been unpublished by the user. <br />
-          You will be able to view it once it is published again.
+          You will be able to view it once it is published again !.
         </Typography>
       </Box>
     </Container>
