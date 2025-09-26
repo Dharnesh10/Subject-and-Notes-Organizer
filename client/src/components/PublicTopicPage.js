@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api";
 import {
@@ -14,6 +14,7 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -26,12 +27,19 @@ function PublicTopicPage() {
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
 
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageDialogSrc, setImageDialogSrc] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showUnavailable, setShowUnavailable] = useState(false);
 
   // Fetch topic and notes
   useEffect(() => {
+    let timeout;
     const fetchTopic = async () => {
       try {
         const res = await API.get(`/topics/public/${topicId}`);
@@ -43,42 +51,80 @@ function PublicTopicPage() {
         setFilteredNotes(sortedNotes);
       } catch (err) {
         console.error(err);
-        setSnackbar({ open: true, message: "Failed to load topic or notes", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "Failed to load topic or notes",
+          severity: "error",
+        });
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchTopic();
+
+    // Timeout: after 5s, show unavailable
+    timeout = setTimeout(() => {
+      if (!topic) {
+        setShowUnavailable(true);
+        setLoading(false);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeout);
   }, [topicId]);
 
-  if (!topic)
-  return (
-    <Container maxWidth="sm" sx={{ mt: 8, textAlign: "center" }}>
-      <Box
+  // Show loader while waiting
+  if (loading) {
+    return (
+      <Container
+        maxWidth="sm"
         sx={{
-          p: 5,
-          borderRadius: 3,
-          backgroundColor: "#fcdcdc", // light error background
-          border: "1px solid #f28b82", // soft red border
-          color: "#2d232e", // your main palette for text
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          mt: 12,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          gutterBottom
-          sx={{ mb: 2 }}
+        <CircularProgress size={60} thickness={5} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Loading Topic...
+        </Typography>
+      </Container>
+    );
+  }
+
+  // Show unavailable if timed out
+  if (showUnavailable || !topic) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 8, textAlign: "center" }}>
+        <Box
+          sx={{
+            p: 5,
+            borderRadius: 3,
+            backgroundColor: "#fcdcdc",
+            border: "1px solid #f28b82",
+            color: "#2d232e",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          }}
         >
-          Topic Unavailable !
-        </Typography>
-        <Typography variant="body1" sx={{ fontSize: "1rem", lineHeight: 1.6 }}>
-          This topic has been unpublished by the user. <br />
-          You will be able to view it once it is published again.
-        </Typography>
-      </Box>
-    </Container>
-  );
-
-
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            gutterBottom
+            sx={{ mb: 2 }}
+          >
+            Topic Unavailable !
+          </Typography>
+          <Typography variant="body1" sx={{ fontSize: "1rem", lineHeight: 1.6 }}>
+            This topic has been unpublished by the user. <br />
+            You will be able to view it once it is published again.
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
 
   const openImageDialog = (src) => {
     setImageDialogSrc(src);
@@ -140,7 +186,6 @@ function PublicTopicPage() {
                           dateStyle: "medium",
                           timeStyle: "short",
                         })}
-                        {/* {" | "}By: {note.userId ? `${note.userId.firstName} ${note.userId.lastName}` : "Unknown"} */}
                       </>
                     }
                   />
@@ -182,7 +227,9 @@ function PublicTopicPage() {
 
       {/* Image Dialog */}
       <Dialog open={imageDialogOpen} onClose={closeImageDialog} maxWidth="md">
-        <DialogContent sx={{ position: "relative", p: 0, backgroundColor: "transparent" }}>
+        <DialogContent
+          sx={{ position: "relative", p: 0, backgroundColor: "transparent" }}
+        >
           <IconButton
             onClick={closeImageDialog}
             sx={{
@@ -200,7 +247,12 @@ function PublicTopicPage() {
             component="img"
             src={imageDialogSrc}
             alt="enlarged"
-            sx={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: 1 }}
+            sx={{
+              maxWidth: "100%",
+              maxHeight: "90vh",
+              objectFit: "contain",
+              borderRadius: 1,
+            }}
           />
         </DialogContent>
       </Dialog>
