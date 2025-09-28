@@ -66,6 +66,7 @@ const Home = () => {
   const [formOpen, setFormOpen] = React.useState(false);
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
+  const [showDescription, setShowDescription] = React.useState(false);
   const [name, setName] = React.useState("Guest");
 
   const navigate = useNavigate();
@@ -120,21 +121,35 @@ const Home = () => {
     else fetchSubjects();
   }, [id]);
 
+
   // Add subject
   const handleAddSubject = async () => {
-    if (!subjectName || !subjectDescription) return;
-    const newSubject = { subjectName, subjectContent: subjectDescription };
-    try {
-      const res = await API.post("/subjects", newSubject);
-      setItems([res.data.subject, ...items]);
-      setSubjectName("");
-      setSubjectDescription("");
-      setFormOpen(false);
-    } catch (err) {
-      console.error("Error adding subject:", err);
-      alert(err.response?.data?.error || "Something went wrong");
-    }
+  if (!subjectName) return; // subject is required
+
+  const newSubject = {
+    subjectName,
+    subjectContent: subjectDescription || "None", // default to "None"
   };
+
+  try {
+    const res = await API.post("/subjects", newSubject);
+    setItems([res.data.subject, ...items]);
+    setSubjectName("");
+    setSubjectDescription("");
+    setShowDescription(false); // reset form state
+    setFormOpen(false);
+  } catch (err) {
+    console.error("Error adding subject:", err);
+    alert(err.response?.data?.error || "Something went wrong");
+  }
+};
+
+  const resetAddForm =() => {
+    setOpenDialog(false);
+    setSubjectName("");
+    setSubjectDescription("");
+  }
+
 
   const handleOpenDelete = (index) => {
     setDeleteIndex(index);
@@ -187,8 +202,28 @@ const Home = () => {
         <Button
           variant="outlined"
           startIcon={<AddIcon />}
-          onClick={() => setFormOpen(true)}
-          sx={{ textTransform: "none", px: 3, fontWeight: 500 }}
+          onClick={() => {
+            setFormOpen(true);
+            setShowDescription(false);
+          }}
+          sx={{
+            textTransform: "none",
+            px: 2,
+            py: 1,
+            fontWeight: 500,
+            fontSize: "0.95rem",
+            borderRadius: "8px",
+            borderColor: "#1976d2",
+            color: "#1976d2",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              backgroundColor: "#e3f2fd", // subtle light blue
+              borderColor: "#1976d2",
+            },
+            "&:active": {
+              backgroundColor: "#bbdefb",
+            },
+          }}
         >
           Add Subject
         </Button>
@@ -277,6 +312,7 @@ const Home = () => {
                   </Typography>
                 </Box>
               </CardContent>
+              
               <CardActions sx={{ p: 2, justifyContent: "center" }}>
                 <Button
                   onClick={() => navigate(`/subjects/${item._id}/topics`)}
@@ -322,7 +358,17 @@ const Home = () => {
 
       {/* Add Subject Form Overlay */}
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Subject</DialogTitle>
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+            textAlign: "center",
+            bgcolor: "#f5f5f5",
+            borderBottom: "1px solid #ddd",
+          }}
+        >
+          Add New Subject
+        </DialogTitle>
+
         <DialogContent>
           <Box
             component="form"
@@ -330,38 +376,87 @@ const Home = () => {
               e.preventDefault();
               handleAddSubject();
             }}
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
           >
+            {/* Subject Name */}
             <TextField
-              placeholder="Subject Name (e.g., Chemistry)"
+              placeholder="Enter Subject Name (e.g., Chemistry)"
+              label="Subject Name"
               variant="outlined"
-              size="small"
+              size="medium"
               value={subjectName}
               onChange={(e) => setSubjectName(e.target.value)}
               fullWidth
+              required
             />
-            <TextField
-              placeholder="Subject Overview (e.g., Organic Chemistry)"
-              variant="outlined"
-              size="small"
-              value={subjectDescription}
-              onChange={(e) => setSubjectDescription(e.target.value)}
-              fullWidth
-            />
+
+            {/* Toggleable Description */}
+            {showDescription ? (
+              <TextField
+                placeholder="Enter Subject Overview (optional)"
+                label="Description"
+                variant="outlined"
+                size="medium"
+                multiline
+                minRows={2}
+                value={subjectDescription}
+                onChange={(e) => setSubjectDescription(e.target.value)}
+                fullWidth
+              />
+            ) : (
+              <Button
+                variant="dashed"
+                onClick={() => setShowDescription(true)}
+                startIcon={<AddIcon />}
+                sx={{
+                  alignSelf: "flex-start",
+                  borderStyle: "dashed",
+                  borderRadius: 3,
+                  px: 2,
+                  py: 1,
+                  textTransform: "none",
+                  color: "#555",
+                  borderColor: "#bbb",
+                  "&:hover": { borderColor: "#1976d2", color: "#1976d2", bgcolor: "#f0f6ff" },
+                }}
+              >
+                Add Description
+              </Button>
+            )}
           </Box>
         </DialogContent>
+
         <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
-          <Button onClick={() => setFormOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => setFormOpen(false)}
+            sx={{
+              borderRadius: 3,
+              px: 4,
+              textTransform: "none",
+              bgcolor: "#f1f1f1",
+              "&:hover": { bgcolor: "#e0e0e0" },
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleAddSubject}
             variant="contained"
-            sx={{ bgcolor: "#0077B5" }}
+            sx={{
+              borderRadius: 3,
+              px: 4,
+              textTransform: "none",
+              bgcolor: "#1976d2",
+              fontWeight: "bold",
+              "&:hover": { bgcolor: "#1565c0" },
+            }}
             startIcon={<AddIcon />}
           >
             Add
           </Button>
         </DialogActions>
       </Dialog>
+
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -373,7 +468,7 @@ const Home = () => {
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
           <Button
-            onClick={() => setOpenDialog(false)}
+            onClick={() => resetAddForm()}
             sx={{
               borderRadius: 2,
               px: 4,
@@ -385,6 +480,7 @@ const Home = () => {
           >
             Cancel
           </Button>
+
           <Button
             onClick={handleConfirmDelete}
             sx={{

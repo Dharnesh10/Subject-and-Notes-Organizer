@@ -164,9 +164,10 @@ function Saved() {
                       <Box display="flex" mb={1} color="text.secondary">
                         <Typography variant="body2">
                           Created At:{" "}
-                          {new Date(topic.createdAt || Date.now()).toLocaleDateString(
-                            "en-GB"
-                          )}
+                          {new Date(topic.createdAt || Date.now()).toLocaleString("en-GB", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
                         </Typography>
                       </Box>
 
