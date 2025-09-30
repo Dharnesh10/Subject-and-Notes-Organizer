@@ -38,7 +38,7 @@ function PublicTopicPage() {
         const res = await API.get(`/topics/public/${topicId}`);
         setTopic(res.data.topic);
         const sortedNotes = res.data.notes.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
         );
         setNotes(sortedNotes);
         setFilteredNotes(sortedNotes);
@@ -49,6 +49,7 @@ function PublicTopicPage() {
     };
     fetchTopic();
   }, [topicId]);
+
 
   if (!topic)
   return (
