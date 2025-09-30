@@ -12,6 +12,7 @@ import PublicTopics from './components/PublicTopics';
 import PublicTopicPage from './components/PublicTopicPage';
 import Saved from './components/Saved';
 import Liked from './components/Liked';
+import Calendar from './components/Calendar';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
@@ -29,6 +30,7 @@ function App() {
         <Route path="/public/topics/:topicId" element={<PublicTopicPage />} />
         <Route path="/saved" element={<Saved /> } />
         <Route path="/liked" element={<Liked />} />
+        <Route path="/calendar" element={<Calendar />} />
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<Signup />} />

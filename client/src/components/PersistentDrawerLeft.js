@@ -34,6 +34,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import Collapse from "@mui/material/Collapse";
 
 const drawerWidth = 300;
@@ -296,6 +297,15 @@ export default function PersistentDrawerLeft({ children }) {
             </ListItem>
           </List>
         </Collapse>
+
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/calendar">
+            <ListItemIcon>
+              <CalendarTodayIcon />
+            </ListItemIcon>
+            <ListItemText primary="Calendar" />
+          </ListItemButton>
+        </ListItem>
 
         <Divider />
 

@@ -447,7 +447,7 @@ const Home = () => {
               px: 4,
               textTransform: "none",
               bgcolor: "#1976d2",
-              fontWeight: "bold",
+              fontWeight: 500,
               "&:hover": { bgcolor: "#1565c0" },
             }}
             startIcon={<AddIcon />}
