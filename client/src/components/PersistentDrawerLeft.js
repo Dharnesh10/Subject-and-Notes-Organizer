@@ -35,6 +35,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import Collapse from "@mui/material/Collapse";
 
 const drawerWidth = 300;
@@ -297,6 +298,15 @@ export default function PersistentDrawerLeft({ children }) {
             </ListItem>
           </List>
         </Collapse>
+
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/chatbot">
+            <ListItemIcon>
+              <SmartToyOutlinedIcon />
+            </ListItemIcon>
+            <ListItemText primary="Chatbot" />
+          </ListItemButton>
+        </ListItem>
 
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/calendar">

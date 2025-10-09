@@ -4,7 +4,6 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Layout from './components/Layout';
 import Main from './components/Home';
-import OnlineContent from './components/OnlineContent';
 import Unauthorized from './components/Unauthorized';
 import TopicsPage from './components/Topics';
 import NotesPage from './components/Notes';
@@ -13,6 +12,7 @@ import PublicTopicPage from './components/PublicTopicPage';
 import Saved from './components/Saved';
 import Liked from './components/Liked';
 import Calendar from './components/Calendar';
+import ChatBot from './components/ChatBot';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
@@ -31,6 +31,7 @@ function App() {
         <Route path="/saved" element={<Saved /> } />
         <Route path="/liked" element={<Liked />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/chatbot" element={<ChatBot />} />
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<Signup />} />
