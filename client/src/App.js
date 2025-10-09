@@ -5,14 +5,14 @@ import Signup from './components/Signup';
 import Layout from './components/Layout';
 import Main from './components/Home';
 import Unauthorized from './components/Unauthorized';
-import TopicsPage from './components/Topics';
-import NotesPage from './components/Notes';
-import PublicTopics from './components/PublicTopics';
-import PublicTopicPage from './components/PublicTopicPage';
-import Saved from './components/Saved';
-import Liked from './components/Liked';
-import Calendar from './components/Calendar';
-import ChatBot from './components/ChatBot';
+import TopicsPage from './pages/Topics';
+import NotesPage from './pages/Notes';
+import PublicTopics from './pages/PublicTopics';
+import PublicTopicPage from './pages/PublicTopicPage';
+import Saved from './pages/Saved';
+import Liked from './pages/Liked';
+import Calendar from './pages/Calendar';
+import ChatBot from './pages/ChatBot';
 
 function PrivateRoute({ children }) {
   const isLoggedIn = !!localStorage.getItem('token');
