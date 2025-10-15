@@ -241,10 +241,10 @@ function TopicsPage() {
                 >
                   <ListItemText
                     primary={topic.title}
-                    secondary={new Date(topic.createdAt).toLocaleString(undefined, {
+                    secondary={`Created on: ${new Date(topic.createdAt).toLocaleString(undefined, {
                       dateStyle: "medium",
                       timeStyle: "short",
-                    })}
+                    })}`}
                   />
                 </ListItemButton>
 

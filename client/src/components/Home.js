@@ -341,7 +341,7 @@ const Home = () => {
                 <Box display="flex" mb={1} color="text.secondary">
                   <CalendarTodayIcon sx={{ fontSize: 18, mr: 0.5 }} />
                   <Typography variant="body2">
-                    Created At:{" "}
+                    Created on:{" "}
                     {new Date(item.createdAt || Date.now()).toLocaleString("en-GB", {
                       dateStyle: "medium",
                       timeStyle: "short",
