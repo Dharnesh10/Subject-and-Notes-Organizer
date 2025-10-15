@@ -93,6 +93,32 @@ router.get("/saved", authMiddleware, async (req, res) => {
   }
 });
 
+// GET all topics liked by the user
+router.get("/liked", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const topics = await Topic.find({ likes: { $in: [userId] } })
+      .sort({ createdAt: -1 })
+      .populate("userId", "firstName lastName")
+      .lean();
+
+    const updatedTopics = topics.map((t) => ({
+      ...t,
+      likesCount: t.likes.length,
+      savesCount: t.saves.length,
+      liked: true,
+      saved: t.saves.some((id) => id.toString() === userId),
+    }));
+
+    res.json(updatedTopics);
+  } catch (err) {
+    console.error("Error fetching liked topics:", err);
+    res.status(500).json({ error: "Error fetching liked topics" });
+  }
+});
+
+
 // ⚠️ keep this one *below* the above route
 router.get("/:subjectId", authMiddleware, async (req, res) => {
   try {
