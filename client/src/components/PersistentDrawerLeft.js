@@ -86,7 +86,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 export default function PersistentDrawerLeft({ children }) {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   const [name, setName] = React.useState('User');
   const [email, setEmail] = React.useState('');
   const [darkMode, setDarkMode] = React.useState(false);
