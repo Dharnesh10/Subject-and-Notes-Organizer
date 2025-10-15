@@ -60,6 +60,29 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+// ------------------ UPDATE a subject (only if belongs to logged-in user) ------------------
+router.put("/:id", authMiddleware, async (req, res) => {
+  const { subjectName, subjectContent } = req.body;
+
+  if (!subjectName) return res.status(400).json({ error: "Subject name is required" });
+
+  try {
+    const subject = await Subject.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      { subjectName, subjectContent },
+      { new: true }
+    );
+
+    if (!subject) return res.status(404).json({ error: "Subject not found or access denied" });
+
+    res.status(200).json({ message: "Subject updated successfully", subject });
+  } catch (err) {
+    console.error("Error updating subject:", err);
+    res.status(500).json({ error: "Error updating subject" });
+  }
+});
+
+
 // ------------------ DELETE a subject (only if belongs to logged-in user) ------------------
 // DELETE a subject (only if belongs to logged-in user)
 router.delete("/:id", authMiddleware, async (req, res) => {

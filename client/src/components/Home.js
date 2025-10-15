@@ -25,8 +25,7 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import { useNavigate, useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
-
+import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
 
 // Helper component for truncating text
 const TruncatedText = ({ text, limit = 25 }) => {
@@ -44,7 +43,7 @@ const TruncatedText = ({ text, limit = 25 }) => {
           style={{
             color: "rgba(0,0,0,0.6)",
             cursor: "pointer",
-            fontSize: "inherit",
+            fontSize: "smaller",
           }}
           onClick={() => setExpanded(!expanded)}
         >
@@ -54,7 +53,6 @@ const TruncatedText = ({ text, limit = 25 }) => {
     </span>
   );
 };
-
 
 const Home = () => {
   const [subjectName, setSubjectName] = React.useState("");
@@ -67,11 +65,13 @@ const Home = () => {
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
   const [showDescription, setShowDescription] = React.useState(false);
+  const [editingId, setEditingId] = React.useState(null);
   const [name, setName] = React.useState("Guest");
 
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // Auth check
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -81,7 +81,7 @@ const Home = () => {
   }, [navigate]);
 
   // Decode token
-  React.useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
@@ -95,6 +95,7 @@ const Home = () => {
     }
   }, []);
 
+  // Fetch subjects
   const fetchSubjects = async () => {
     try {
       const res = await API.get("/subjects");
@@ -116,41 +117,57 @@ const Home = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (id) fetchSubjectById(id);
     else fetchSubjects();
   }, [id]);
 
-
   // Add subject
   const handleAddSubject = async () => {
-  if (!subjectName) return; // subject is required
+    if (!subjectName) return;
 
-  const newSubject = {
-    subjectName,
-    subjectContent: subjectDescription || "None", // default to "None"
+    try {
+      const res = await API.post("/subjects", {
+        subjectName,
+        subjectContent: subjectDescription || "None",
+      });
+      setItems([res.data.subject, ...items]);
+      setSubjectName("");
+      setSubjectDescription("");
+      setShowDescription(false);
+      setFormOpen(false);
+    } catch (err) {
+      console.error("Error adding subject:", err);
+      alert(err.response?.data?.error || "Something went wrong");
+    }
   };
 
-  try {
-    const res = await API.post("/subjects", newSubject);
-    setItems([res.data.subject, ...items]);
-    setSubjectName("");
-    setSubjectDescription("");
-    setShowDescription(false); // reset form state
-    setFormOpen(false);
-  } catch (err) {
-    console.error("Error adding subject:", err);
-    alert(err.response?.data?.error || "Something went wrong");
-  }
-};
+  // Update subject
+  const handleUpdateSubject = async () => {
+    if (!subjectName || !editingId) return;
 
-  const resetAddForm =() => {
-    setOpenDialog(false);
-    setSubjectName("");
-    setSubjectDescription("");
-  }
+    try {
+      const res = await API.put(`/subjects/${editingId}`, {
+        subjectName,
+        subjectContent: subjectDescription,
+      });
 
+      const updatedItems = items.map((item) =>
+        item._id === editingId ? res.data.subject : item
+      );
+      setItems(updatedItems);
+      setFormOpen(false);
+      setSubjectName("");
+      setSubjectDescription("");
+      setEditingId(null);
+      setShowDescription(false);
+    } catch (err) {
+      console.error("Error updating subject:", err);
+      alert(err.response?.data?.error || "Something went wrong");
+    }
+  };
 
+  // Delete subject
   const handleOpenDelete = (index) => {
     setDeleteIndex(index);
     setOpenDialog(true);
@@ -171,6 +188,13 @@ const Home = () => {
       setOpenDialog(false);
       setDeleteIndex(null);
     }
+  };
+
+  const resetAddForm = () => {
+    setOpenDialog(false);
+    setSubjectName("");
+    setSubjectDescription("");
+    setEditingId(null);
   };
 
   const filteredItems = items.filter(
@@ -198,13 +222,16 @@ const Home = () => {
           <EventNoteOutlinedIcon fontSize="medium" />
           Created Subjects
         </Typography>
-        
+
         <Button
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={() => {
             setFormOpen(true);
             setShowDescription(false);
+            setSubjectName("");
+            setSubjectDescription("");
+            setEditingId(null);
           }}
           sx={{
             textTransform: "none",
@@ -216,13 +243,8 @@ const Home = () => {
             borderColor: "#1976d2",
             color: "#1976d2",
             transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              backgroundColor: "#e3f2fd", // subtle light blue
-              borderColor: "#1976d2",
-            },
-            "&:active": {
-              backgroundColor: "#bbdefb",
-            },
+            "&:hover": { backgroundColor: "#e3f2fd", borderColor: "#1976d2" },
+            "&:active": { backgroundColor: "#bbdefb" },
           }}
         >
           Add Subject
@@ -267,6 +289,7 @@ const Home = () => {
             <Card
               key={index}
               sx={{
+                position: "relative",
                 minHeight: 180,
                 width: 325,
                 display: "flex",
@@ -279,6 +302,29 @@ const Home = () => {
                 mx: "auto",
               }}
             >
+              {/* Edit Button */}
+              <Button
+                onClick={() => {
+                  setSubjectName(item.subjectName);
+                  setSubjectDescription(item.subjectContent);
+                  setEditingId(item._id);
+                  setFormOpen(true);
+                  setShowDescription(true);
+                }}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  minWidth: 0,
+                  padding: "4px",
+                  borderRadius: "50%",
+                  color: "#0077B5",
+                  "&:hover": { bgcolor: "#e0f0ff" },
+                }}
+              >
+                <FiEdit color="#0077B5" size={17} />
+              </Button>
+
               <CardContent
                 sx={{
                   flexGrow: 1,
@@ -304,7 +350,10 @@ const Home = () => {
                 </Box>
                 <Box display="flex" color="text.secondary">
                   <Typography variant="body2" color="text.secondary">
-                    <HiOutlineClipboardDocumentList size={20} style={{ marginRight: "5px" }} />
+                    <HiOutlineClipboardDocumentList
+                      size={20}
+                      style={{ marginRight: "5px" }}
+                    />
                     <TruncatedText
                       text={"Description: " + (item.subjectContent || "No Description")}
                       limit={30}
@@ -312,7 +361,8 @@ const Home = () => {
                   </Typography>
                 </Box>
               </CardContent>
-              
+
+              {/* View & Delete */}
               <CardActions sx={{ p: 2, justifyContent: "center" }}>
                 <Button
                   onClick={() => navigate(`/subjects/${item._id}/topics`)}
@@ -356,7 +406,7 @@ const Home = () => {
         )}
       </Grid>
 
-      {/* Add Subject Form Overlay */}
+      {/* Add/Edit Dialog */}
       <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle
           sx={{
@@ -366,7 +416,7 @@ const Home = () => {
             borderBottom: "1px solid #ddd",
           }}
         >
-          Add New Subject
+          {editingId ? "Edit Subject" : "Add New Subject"}
         </DialogTitle>
 
         <DialogContent>
@@ -374,11 +424,11 @@ const Home = () => {
             component="form"
             onSubmit={(e) => {
               e.preventDefault();
-              handleAddSubject();
+              if (editingId) handleUpdateSubject();
+              else handleAddSubject();
             }}
             sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
           >
-            {/* Subject Name */}
             <TextField
               placeholder="Enter Subject Name (e.g., Chemistry)"
               label="Subject Name"
@@ -390,7 +440,6 @@ const Home = () => {
               required
             />
 
-            {/* Toggleable Description */}
             {showDescription ? (
               <TextField
                 placeholder="Enter Subject Overview (optional)"
@@ -440,7 +489,7 @@ const Home = () => {
             Cancel
           </Button>
           <Button
-            onClick={handleAddSubject}
+            onClick={editingId ? handleUpdateSubject : handleAddSubject}
             variant="contained"
             sx={{
               borderRadius: 3,
@@ -452,11 +501,10 @@ const Home = () => {
             }}
             startIcon={<AddIcon />}
           >
-            Add
+            {editingId ? "Update" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
-
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -468,7 +516,7 @@ const Home = () => {
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3 }}>
           <Button
-            onClick={() => resetAddForm()}
+            onClick={resetAddForm}
             sx={{
               borderRadius: 2,
               px: 4,
@@ -505,7 +553,11 @@ const Home = () => {
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: "100%" }}>
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
