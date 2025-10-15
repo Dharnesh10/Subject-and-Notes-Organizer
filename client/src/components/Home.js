@@ -43,11 +43,11 @@ const TruncatedText = ({ text, limit = 25 }) => {
           style={{
             color: "rgba(0,0,0,0.6)",
             cursor: "pointer",
-            fontSize: "smaller",
+            fontSize: "small",
           }}
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? " Show less" : "..."}
+          {expanded ? " Show less" : "...more"}
         </span>
       )}
     </span>
