@@ -14,6 +14,7 @@ import {
   TextField,
   InputAdornment,
   Button,
+  Pagination,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import SortIcon from "@mui/icons-material/Sort";
@@ -21,7 +22,7 @@ import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
-import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 
 // Truncated text component
 const TruncatedText = ({ text, limit = 40 }) => {
@@ -57,6 +58,9 @@ function PublicTopics() {
   const [sortAsc, setSortAsc] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const topicsPerPage = 12;
 
   // Fetch topics
   useEffect(() => {
@@ -81,9 +85,10 @@ function PublicTopics() {
       topic.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredTopics(filtered);
+    setCurrentPage(1); // reset to first page when searching
   }, [searchTerm, topics]);
 
-  // Toggle sort
+  // Sort
   const handleSortByDate = () => {
     const sorted = [...filteredTopics].sort((a, b) =>
       sortAsc
@@ -134,6 +139,16 @@ function PublicTopics() {
     }
   };
 
+  // Pagination logic
+  const indexOfLast = currentPage * topicsPerPage;
+  const indexOfFirst = indexOfLast - topicsPerPage;
+  const currentTopics = filteredTopics.slice(indexOfFirst, indexOfLast);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <Box sx={{ flexGrow: 1, p: 4, minHeight: "100vh" }}>
       {/* Header with sort button */}
@@ -145,7 +160,6 @@ function PublicTopics() {
           mb: 2,
         }}
       >
-
         <Typography
           variant="h5"
           fontWeight="bold"
@@ -154,7 +168,7 @@ function PublicTopics() {
           <PublicOutlinedIcon fontSize="medium" />
           Published Topics
         </Typography>
-        
+
         <Button
           variant="outlined"
           startIcon={<SortIcon />}
@@ -183,8 +197,8 @@ function PublicTopics() {
 
       {/* Topics grid */}
       <Grid container spacing={4} justifyContent="flex-start">
-        {filteredTopics.length > 0 ? (
-          filteredTopics.map(
+        {currentTopics.length > 0 ? (
+          currentTopics.map(
             (topic) =>
               topic && (
                 <Grid
@@ -302,6 +316,25 @@ function PublicTopics() {
           </Typography>
         )}
       </Grid>
+
+      {/* Pagination */}
+      {filteredTopics.length > topicsPerPage && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 4,
+          }}
+        >
+          <Pagination
+            count={Math.ceil(filteredTopics.length / topicsPerPage)}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            shape="rounded"
+          />
+        </Box>
+      )}
 
       <Snackbar
         open={snackbarOpen}
