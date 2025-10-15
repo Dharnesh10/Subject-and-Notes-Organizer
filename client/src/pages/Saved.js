@@ -38,7 +38,7 @@ const TruncatedText = ({ text, limit = 40 }) => {
           }}
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? " Show less" : "..."}
+          {expanded ? " Show less" : "...more"}
         </span>
       )}
     </>
