@@ -45,8 +45,23 @@ def generate_response():
         # Generate content
         # response = model.generate_content(user_input)
         response = model.generate_content(
-            f"Please generate content based on the following input:\n{user_input}"
+            f"""
+            Generate the following content in PLAIN TEXT ONLY.
+
+            STRICT RULES:
+            - Do NOT use Markdown.
+            - Do NOT use #, *, **, |, or any markdown symbols.
+            - Each topic heading must be in ALL CAPS.
+            - After every topic heading, include bullet points starting with "-".
+            - Add one blank line (a newline character) between topics.
+            - Do NOT merge topics into a single paragraph.
+
+            USER INPUT:
+            {user_input}
+            """
         )
+
+
         output_text = getattr(response, "text", "") or str(response)
 
         # Prepare response for frontend

@@ -157,14 +157,14 @@ function ChatBotMUI() {
           size={isMobile ? "small" : "medium"}
           sx={{ fontFamily: "'Roboto', sans-serif" }}
         />
-        <IconButton onClick={initVoiceRecognition} color="primary" size={isMobile ? "small" : "medium"}>
+        <IconButton onClick={initVoiceRecognition} color="primary" size={isMobile ? "small" : "medium"} disabled={true}>
           <MicIcon fontSize={isMobile ? "small" : "medium"} />
         </IconButton>
         <Button
           variant="contained"
           endIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
           onClick={handleSend}
-          disabled={loading}
+          disabled={true}
           size={isMobile ? "small" : "medium"}
         >
           Send
